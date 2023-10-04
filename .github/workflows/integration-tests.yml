@@ -4,16 +4,16 @@ on: [push]
 
 jobs:
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # - name: Set up Python
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
 
       - name: Install dependencies
         run: |
@@ -22,5 +22,3 @@ jobs:
       - name: Run integration tests
         run: |
           python run_integration_tests.py
-
-
