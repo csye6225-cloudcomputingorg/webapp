@@ -98,8 +98,11 @@ def handle_update_assignment(assignment_id):
             if not service.validate_mandatory_fields(request_data, mandatory_fields):
                 return service.prepare_response(400)
 
-            service.update_assignment(assignment_id, request.get_json())
-            return service.prepare_response(204)
+            assignment_data = service.update_assignment(assignment_id, request.get_json())
+            if assignment_data:
+                return service.prepare_response(204)
+            else:
+                return service.prepare_response(400)
         elif (service.check_owner(assignment_id, base64_encoded_credentials) == "No Match"):
             return service.prepare_response(403)
         else:

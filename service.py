@@ -57,7 +57,7 @@ def create_assignment(request_auth, request_body):
 
     print(request_auth, request_body)
 
-    if 1 <= request_body['points'] <= 10:
+    if ((1 <= request_body['points'] <= 10) and (1 <= request_body['num_of_attempts'] <= 3)):
         assignment = bootstrap.create_assignment_db(request_auth, request_body)
         print(assignment)
         return assignment
@@ -78,8 +78,12 @@ def check_owner(assignment_id, base64_encoded_credentials):
 
 def update_assignment(assignment_id, request_body):
     print(request_body)
-    if 1 <= request_body['points'] <= 10:
-        return bootstrap.update_assignment_db(assignment_id, request_body)
+    if ((1 <= request_body['points'] <= 10) and (1 <= request_body['num_of_attempts'] <= 3)):
+        assignment = bootstrap.update_assignment_db(assignment_id, request_body)
+        print(assignment)
+        return assignment
+    else:
+        return False
 
 
 def delete_assignment(assignment_id):
