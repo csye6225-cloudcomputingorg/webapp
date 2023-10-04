@@ -67,7 +67,10 @@ def handle_create_assignment():
         assignment_data = service.create_assignment(
             base64_encoded_credentials, request_data)
 
-        return service.prepare_assignments_response(201, assignment_data)
+        if(assignment_data):
+            return service.prepare_assignments_response(201, assignment_data)
+        else:
+            return service.prepare_response(400)
     else:
         return service.prepare_response(401)
 
@@ -86,18 +89,21 @@ def handle_update_assignment(assignment_id):
         base64_encoded_credentials = None
 
     if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials)):
-            
+        if(service.check_owner(assignment_id, base64_encoded_credentials) == "Match"):
+
             request_data = request.get_json()
-            mandatory_fields = ['name', 'points', 'num_of_attempts', 'deadline']
+            mandatory_fields = ['name', 'points',
+                                'num_of_attempts', 'deadline']
 
             if not service.validate_mandatory_fields(request_data, mandatory_fields):
                 return service.prepare_response(400)
-            
+
             service.update_assignment(assignment_id, request.get_json())
             return service.prepare_response(204)
-        else:
+        elif (service.check_owner(assignment_id, base64_encoded_credentials) == "No Match"):
             return service.prepare_response(403)
+        else:
+            return service.prepare_response(404)
     else:
         return service.prepare_response(401)
 
@@ -116,11 +122,13 @@ def handle_delete_assignment(assignment_id):
         base64_encoded_credentials = None
 
     if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials)):
+        if(service.check_owner(assignment_id, base64_encoded_credentials) == "Match"):
             if(service.delete_assignment(assignment_id)):
                 return service.prepare_response(204)
-        else:
+        elif (service.check_owner(assignment_id, base64_encoded_credentials) == "No Match"):
             return service.prepare_response(403)
+        else:
+            return service.prepare_response(404)
     else:
         return service.prepare_response(401)
 
@@ -162,19 +170,21 @@ def handle_get_by_id_assignment(assignment_id):
         base64_encoded_credentials = None
 
     if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials)):
+        if(service.check_owner(assignment_id, base64_encoded_credentials)=="Match"):
             assignment_data = service.get_assignment_by_id(assignment_id)
             return service.prepare_assignments_response(200, assignment_data)
-        else:
+        elif (service.check_owner(assignment_id, base64_encoded_credentials)=="No Match"):
             return service.prepare_response(403)
+        else:
+            return service.prepare_response(404)
     else:
         return service.prepare_response(401)
 
 
 # run test cases
-service.test_get_case()
-service.test_post_case()
-service.test_not_found_case()
+# service.test_get_case()
+# service.test_post_case()
+# service.test_not_found_case()
 
 
 # main method

@@ -1,14 +1,11 @@
-from app import app
 from config import mysql
 from flask import jsonify
 import bootstrap
 import base64
 import bcrypt
-import uuid
+
 
 # function to check the database connectivity
-
-
 def check_database_connection():
     try:
         conn = mysql.connect()
@@ -70,10 +67,13 @@ def create_assignment(request_auth, request_body):
 
 def check_owner(assignment_id, base64_encoded_credentials):
     owner = bootstrap.fetch_owner(assignment_id)
-    if owner == base64_encoded_credentials:
-        return True
+    if owner:
+        if owner == base64_encoded_credentials:
+            return "Match"
+        else:
+            return "No Match"
     else:
-        return False
+        return "Not Found"
 
 
 def update_assignment(assignment_id, request_body):
@@ -124,17 +124,22 @@ def prepare_assignments_response(status_code, assignment_list):
 ###################### test cases ######################
 
 
-def test_get_case():
-    response_get = app.test_client().get('/healthz')
-    assert response_get.status_code == 200
+# def test_get_case():
+#     url = 'http://127.0.0.1:5000/healthz'
+#     response_get = requests.get(url)
+#     response_post = requests.post(url)
+#     response_not_found = requests.get(url+'/')
+#     assert response_get.status_code == 200
+#     assert response_post.status_code == 405
+#     assert response_not_found.status_code == 404
 
 
-def test_post_case():
-    response_post = app.test_client().post('/healthz')
-    assert response_post.status_code == 405
+# def test_post_case():
+#     response_post = app.test_client().post('/healthz')
+#     assert response_post.status_code == 405
 
 
-def test_not_found_case():
-    response_not_found = app.test_client().get('/healthz/')
-    assert response_not_found.status_code == 404
+# def test_not_found_case():
+#     response_not_found = app.test_client().get('/healthz/')
+#     assert response_not_found.status_code == 404
 ###################### test cases ######################

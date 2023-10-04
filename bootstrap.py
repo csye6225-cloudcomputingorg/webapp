@@ -94,10 +94,13 @@ def create_assignment_db(request_auth, request_body):
 
 
 def fetch_owner(assignment_id):
-    owner = session.query(Assignment).filter(
+    try:
+        owner = session.query(Assignment).filter(
         Assignment.id == assignment_id).first().owner
-    print(owner)
-    return owner
+        print(owner)
+        return owner
+    except:
+        return False
 
 
 def update_assignment_db(assignment_id, request_body):
