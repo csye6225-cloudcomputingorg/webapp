@@ -1,0 +1,9 @@
+pip install Flask
+pip install Flask-Cors
+pip install SQLAlchemy
+pip install sqlalchemy
+pip install mysql-connector-python
+pip install python-dotenv
+pip install uuid
+pip install bcrypt
+pip install base64
