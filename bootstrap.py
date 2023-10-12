@@ -8,10 +8,14 @@ from uuid import uuid1
 import bcrypt
 from app import app
 from datetime import datetime
+from dotenv import load_dotenv
 
+# load environment variables
+load_dotenv()
 # Database configuration
-db_password = urllib.parse.quote(os.environ.get('db_password'))
-DATABASE_URL = f"mysql+mysqlconnector://{os.environ.get('db_user')}:{db_password}@{os.environ.get('db_host')}/csye6225cloudcomputing"
+# db_password = urllib.parse.quote(os.environ.get('db_password'))
+db_password = urllib.parse.quote(os.getenv('db_password'))
+DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}/csye6225cloudcomputing"
 print(DATABASE_URL)
 engine = create_engine(DATABASE_URL)
 

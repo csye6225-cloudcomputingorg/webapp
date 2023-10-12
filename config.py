@@ -9,12 +9,13 @@ load_dotenv()
 
 # fetch database credentials from environment variables
 def set_db_creds():
-    app.config['MYSQL_DATABASE_USER'] = os.environ.get('db_user')
-    app.config['MYSQL_DATABASE_PASSWORD'] = os.environ.get('db_password')
-    #app.config['MYSQL_DATABASE_DB'] = os.environ.get('db_name')
-    app.config['MYSQL_DATABASE_HOST'] = os.environ.get('db_host')
+    app.config['MYSQL_DATABASE_USER'] = os.getenv('db_user')
+    app.config['MYSQL_DATABASE_PASSWORD'] = os.getenv('db_password')
+    #app.config['MYSQL_DATABASE_DB'] = os.getenv('db_name')
+    app.config['MYSQL_DATABASE_HOST'] = os.getenv('db_host')
+    print(os.getenv('db_user'))
 
-    #print(os.environ.get('db_password'), os.environ.get('db_user'), os.environ.get('db_host'))
+    #print(os.getenv('db_password'), os.getenv('db_user'), os.getenv('db_host'))
 
 
 mysql = MySQL()
