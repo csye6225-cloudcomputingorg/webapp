@@ -6,6 +6,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -16,8 +26,18 @@ jobs:
           python-version: 3.8
 
       - name: Install dependencies
+        run: pip install -r required_libraries.txt
+
+      - name: Wait for MySQL to be healthy
         run: |
-          pip install -r required_libraries.txt
+          echo "Waiting for MySQL to be healthy..."
+          while ! mysqladmin ping -h 127.0.0.1 --silent; do
+            sleep 1
+          done
+          echo "MySQL is healthy."
+
+      - name: Start Flask app
+        run: python main.py &
 
       - name: Run integration tests
         run: |
