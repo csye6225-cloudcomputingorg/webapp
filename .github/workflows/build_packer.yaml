@@ -47,9 +47,9 @@ jobs:
               ls /home/runner/work/webapp/webapp
 
       - name: Build AMI
+        env:
+          AWS_REGION: us-east-1
+          SSH_USERNAME: admin
+          SUBNET_ID: subnet-025f87a6da259c0bd
         run: |
           packer build ami.debian-packer-aws.pkr.hcl
-          env:
-            AWS_REGION: us-east-1
-            SSH_USERNAME: admin
-            SUBNET_ID: subnet-025f87a6da259c0bd
