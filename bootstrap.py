@@ -15,9 +15,15 @@ load_dotenv()
 # Database configuration
 # db_password = urllib.parse.quote(os.environ.get('db_password'))
 db_password = urllib.parse.quote(os.getenv('db_password'))
-DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}/csye6225cloudcomputing"
+DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}"
 print(DATABASE_URL)
-engine = create_engine(DATABASE_URL)
+database = create_engine(DATABASE_URL)
+
+# Connect to the MySQL server and create the database.
+database.execute(f"CREATE DATABASE IF NOT EXISTS {os.getenv('db_name')}")
+
+connection_string = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}/{os.getenv('db_name')}"
+engine = create_engine(connection_string)
 
 # Create tables if they don't exist, or update the schema if needed
 Base.metadata.create_all(engine, checkfirst=True)
