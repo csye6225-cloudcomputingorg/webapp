@@ -1,6 +1,9 @@
-name: Build on Push
+name: Build Packer on Push
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build-packer:
@@ -53,3 +56,17 @@ jobs:
           SUBNET_ID: subnet-025f87a6da259c0bd
         run: |
           packer build ami.debian-packer-aws.pkr.hcl
+
+      - name: Get AMI ID
+        id: get-ami
+        run: |
+          echo "AMI_ID=$(cat manifest.json | jq -r .builds[0].artifact_id | cut -d':' -f2)" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Share AMI with DEMO account
+        env:
+          AWS_REGION: us-east-1
+          DEMO_ACCOUNT_ID: ${{ secrets.DEMO_ACCOUNT_ID }}
+        run: |
+          ami_id=${{ env.AMI_ID }}
+          aws ec2 modify-image-attribute --image-id $AMI_ID --launch-permission "{\"Add\":[{\"UserId\":\"$DEMO_ACCOUNT_ID\"}]}"
