@@ -14,15 +14,15 @@ from dotenv import load_dotenv
 load_dotenv()
 # Database configuration
 # db_password = urllib.parse.quote(os.environ.get('db_password'))
-db_password = urllib.parse.quote(os.getenv('db_password'))
-DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}"
-print(DATABASE_URL)
-database = create_engine(DATABASE_URL)
+# db_password = urllib.parse.quote(os.getenv('db_password'))
+# DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}"
+# print(DATABASE_URL)
+# database = create_engine(DATABASE_URL)
 
 # Connect to the MySQL server and create the database.
-database.execute(f"CREATE DATABASE IF NOT EXISTS {os.getenv('db_name')}")
+# database.execute(f"CREATE DATABASE IF NOT EXISTS {os.getenv('db_name')}")
 
-connection_string = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}/{os.getenv('db_name')}"
+connection_string = f"mysql+pymysql://{os.getenv('db_user')}:{os.getenv('db_password')}@{os.getenv('db_host')}/{os.getenv('db_name')}"
 engine = create_engine(connection_string)
 
 # Create tables if they don't exist, or update the schema if needed
@@ -35,7 +35,7 @@ session = Session()
 # bcrypt = Bcrypt(app)
 
 # create users from the csv
-with open('opt/user.csv', 'r') as csvfile:
+with open('webapp/opt/user.csv', 'r') as csvfile:
 
     csvreader = csv.DictReader(csvfile)
 

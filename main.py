@@ -192,6 +192,6 @@ def handle_get_by_id_assignment(assignment_id):
 
 # main method
 if __name__ == "__main__":
-    with engine.connect() as connection:
-        connection.execute("SELECT 1")
-    app.run(host='127.0.0.1', port=5000)
+    # with engine.connect() as connection:
+    #    connection.execute("SELECT 1")
+    app.run(host='0.0.0.0', port=3001)
