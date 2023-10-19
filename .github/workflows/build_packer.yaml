@@ -1,6 +1,9 @@
-name: Build on Push
+name: Build Packer on Push
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build-packer:
