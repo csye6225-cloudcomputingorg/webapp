@@ -24,7 +24,7 @@ jobs:
 
       - name: Packer init
         run: |
-              packer init packer/packer-ami.pkr.hcl
+              packer init ami.debian-packer-aws.pkr.hcl
 
       - name: Validate Packer Template
         run: |
