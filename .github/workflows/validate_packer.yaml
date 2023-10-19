@@ -1,0 +1,14 @@
+name: Echo on Pull Request
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo Message
+        run: echo "Pull request has been opened from a forked repository to the organization's repository."
