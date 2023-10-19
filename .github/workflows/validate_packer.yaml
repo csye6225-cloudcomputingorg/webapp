@@ -1,4 +1,4 @@
-name: Echo on Pull Request
+name: Validate on Pull Request
 
 on:
   pull_request:
@@ -6,9 +6,49 @@ on:
       - opened
 
 jobs:
-  echo:
+  validate-packer:
     runs-on: ubuntu-latest
 
     steps:
       - name: Echo Message
         run: echo "Pull request has been opened from a forked repository to the organization's repository."
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+            version: "latest"
+
+      - name: Packer init
+        run: |
+              packer init ami.debian-packer-aws.pkr.hcl
+
+      - name: Build Artifact
+        run: |
+          mkdir -p app
+          zip -r app/webapp-main.zip . -x ".git*" -x ".github*"
+
+      - name: Publish Web App Artifact
+        uses: actions/upload-artifact@v2
+        with:
+              name: webapp
+              path: app/webapp-main.zip
+
+      - name: check path
+        run: |
+              pwd
+              ls /home/runner/work/webapp/webapp
+
+      - name: Validate Packer Template
+        run: |
+          packer validate ami.debian-packer-aws.pkr.hcl
+
+      - name: Check Formatting
+        run: |
+          if ! packer fmt -check=true ami.debian-packer-aws.pkr.hcl; then
+            echo "Packer template is not formatted correctly. Please format it using 'packer fmt' and commit the changes."
+            exit 1
+          fi
