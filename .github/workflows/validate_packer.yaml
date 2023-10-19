@@ -34,13 +34,13 @@ jobs:
       - name: Publish Web App Artifact
         uses: actions/upload-artifact@v2
         with:
-              name: webapp-main
+              name: webapp
               path: app/webapp-main.zip
 
       - name: check path
         run: |
               pwd
-              ls /home/runner/work/webapp-main/webapp
+              ls /home/runner/work/webapp/webapp
 
       - name: Validate Packer Template
         run: |
