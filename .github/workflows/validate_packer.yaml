@@ -26,6 +26,22 @@ jobs:
         run: |
               packer init ami.debian-packer-aws.pkr.hcl
 
+      - name: Build Artifact
+        run: |
+          mkdir -p app
+          zip -r app/webapp-main.zip . -x ".git*" -x ".github*"
+
+      - name: Publish Web App Artifact
+        uses: actions/upload-artifact@v2
+        with:
+              name: webapp-main
+              path: app/webapp-main.zip
+
+      - name: check path
+        run: |
+              pwd
+              ls /home/runner/work/webapp-main/webapp
+
       - name: Validate Packer Template
         run: |
           packer validate ami.debian-packer-aws.pkr.hcl
