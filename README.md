@@ -21,8 +21,7 @@
 	- apt install python3.11-venv
 	- mkdir -p /csye-6225-cloud-computing/webapp
 	- scp -i .ssh/digitalocean -r C:/Users/18573/Downloads/csye-6225-cloud-computing root@206.189.184.105:/csye-6225-cloud-computing/webapp
-	
-	
+		
 	- export FLASK_APP=main.py
 	- export FLASK_ENV=development
 	- flask run --host=127.0.0.1 --port=5000
