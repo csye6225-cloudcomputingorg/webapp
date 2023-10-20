@@ -32,6 +32,7 @@ sudo systemctl enable mariadb
 sudo systemctl status mariadb
 
 sudo mysql -u root -ppassword -e 'CREATE DATABASE webapp;',
+sudo mysql -u root --skip-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';"
 
 # Secure MariaDB installation (optional but recommended)
 # Make sure to set a strong password for the root user
