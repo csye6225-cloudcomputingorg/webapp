@@ -30,7 +30,8 @@ sudo apt install mariadb-server -y
 sudo systemctl start mariadb
 sudo systemctl enable mariadb
 sudo systemctl status mariadb
-sudo mysql -u root -p password -e 'CREATE DATABASE webapp;',
+
+sudo mysql -u root -ppassword -e 'CREATE DATABASE webapp;',
 
 # Secure MariaDB installation (optional but recommended)
 # Make sure to set a strong password for the root user
