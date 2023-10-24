@@ -70,7 +70,7 @@ build {
   ]
 
   provisioner "file" {
-    source      = "webapp-main.zip"
+    source      = "app/webapp-main.zip"
     destination = "/home/admin/webapp.zip"
   }
 
