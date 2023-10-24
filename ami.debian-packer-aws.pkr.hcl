@@ -8,7 +8,7 @@ packer {
 }
 
 variable "aws_region" {
-type    = string
+  type    = string
   default = "us-east-1"
 }
 
@@ -70,7 +70,7 @@ build {
   ]
 
   provisioner "file" {
-    source      = "app/webapp-main.zip"
+    source      = "webapp-main.zip"
     destination = "/home/admin/webapp.zip"
   }
 
