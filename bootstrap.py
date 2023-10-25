@@ -9,9 +9,11 @@ import bcrypt
 from app import app
 from datetime import datetime
 from dotenv import load_dotenv
+import requests
+
 
 # load environment variables
-load_dotenv()
+# load_dotenv()
 # Database configuration
 # db_password = urllib.parse.quote(os.environ.get('db_password'))
 # db_password = urllib.parse.quote(os.getenv('db_password'))
@@ -22,7 +24,42 @@ load_dotenv()
 # Connect to the MySQL server and create the database.
 # database.execute(f"CREATE DATABASE IF NOT EXISTS {os.getenv('db_name')}")
 
-connection_string = f"mysql+pymysql://{os.getenv('db_user')}:{os.getenv('db_password')}@{os.getenv('db_host')}/{os.getenv('db_name')}"
+# Fetch user data
+user_data_url = "http://169.254.169.254/latest/user-data"
+response = requests.get(user_data_url)
+user_data = response.text
+
+# Split user data into lines
+lines = user_data.split('\n')
+
+# Parse environment variable assignments
+environment_variables = {}
+for line in lines:
+    if line.strip().startswith("export "):
+        parts = line.strip()[7:].split("=")
+        if len(parts) == 2:
+            key = parts[0].strip()  # Remove "export " prefix
+            value = parts[1].strip()
+            environment_variables[key] = value
+
+# Access the environment variables
+db_host = environment_variables.get("DB_HOST")
+db_name = environment_variables.get("DB_NAME")
+db_user = environment_variables.get("DB_USER")
+db_password = environment_variables.get("DB_PASSWORD")
+
+
+# load environment variables
+DATABASE_URL = f"mysql+pymysql://{db_user}:{db_password}@{db_host}"
+print(DATABASE_URL)
+database = create_engine(DATABASE_URL)
+
+# Connect to the MySQL server and create the database.
+# database.execute(f"CREATE DATABASE IF NOT EXISTS {os.environ.get('DATABASE')}")
+
+connection_string = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
+print(connection_string)
+
 engine = create_engine(connection_string)
 
 # Create tables if they don't exist, or update the schema if needed
