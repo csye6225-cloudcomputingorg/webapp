@@ -1,0 +1,18 @@
+[Unit]
+Description=WebApp
+After=network.target cloud-init.target
+Wants=cloud-init.target
+
+[Service]
+ExecStart=/home/admin/webapp/env/bin/python3 /home/admin/webapp/main.py
+WorkingDirectory=/home/admin/webapp
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=webapp
+User=admin
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=cloud-init.target
