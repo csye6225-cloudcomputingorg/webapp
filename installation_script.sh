@@ -46,7 +46,7 @@ rm webapp.zip
 cd webapp
 
 sudo groupadd csye6225
-sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
+sudo useradd -s /bin/false -g csye6225 -d /home/admin/csye6225 -m csye6225
 sudo chown csye6225:csye6225 -R webapp
 # sudo chown -R 755 .
 
