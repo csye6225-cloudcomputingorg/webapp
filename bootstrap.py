@@ -72,7 +72,7 @@ session = Session()
 # bcrypt = Bcrypt(app)
 
 # create users from the csv
-with open('webapp/opt/user.csv', 'r') as csvfile:
+with open('/home/admin/webapp/opt/user.csv', 'r') as csvfile:
 
     csvreader = csv.DictReader(csvfile)
 
