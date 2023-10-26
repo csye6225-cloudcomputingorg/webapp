@@ -48,10 +48,14 @@ unzip webapp.zip -d webapp
 rm webapp.zip
 cd webapp || exit
 
+sudo chown -R csye6225:csye6225 . 
+sudo chown -R 755 .
+
 sudo cp webapp.service /etc/systemd/system/
 
 sudo systemctl daemon-reload
 sudo systemctl enable webapp.service
 sudo systemctl start webapp.service
+sudo systemctl restart webapp.service
 
 deactivate
