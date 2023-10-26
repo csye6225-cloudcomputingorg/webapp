@@ -4,9 +4,6 @@ echo_info () {
     echo $1
 }
 
-sudo groupadd csye6225
-sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
-
 echo_info "---------UPDATES-BEING-INSTALLED---------"
 
 # Update the system
@@ -46,16 +43,19 @@ sudo apt install -y unzip
 mkdir webapp
 unzip webapp.zip -d webapp
 rm webapp.zip
-cd webapp || exit
+cd webapp
 
-sudo chown -R csye6225:csye6225 . 
-sudo chown -R 755 .
+sudo groupadd csye6225
+sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
+sudo chown csye6225:csye6225 -R webapp
+# sudo chown -R 755 .
 
-sudo cp webapp.service /etc/systemd/system/
+sudo mv webapp.service /etc/systemd/system/webapp.service
 
 sudo systemctl daemon-reload
-sudo systemctl enable webapp.service
-sudo systemctl start webapp.service
-sudo systemctl restart webapp.service
+sudo systemctl enable webapp
+sudo systemctl start webapp
+sudo systemctl restart webapp
+sudo systemctl stop webapp
 
 deactivate
