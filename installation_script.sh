@@ -39,12 +39,13 @@ pip3 install bcrypt==4.0.1 blinker==1.6.3 certifi==2023.7.22 charset-normalizer=
 echo_info "---------INSTALLING-UNZIP---------"
 sudo apt install -y unzip
 
-sudo mv webapp.service /etc/systemd/system/webapp.service
 
 # Download and unzip your web application code
 mkdir webapp
 unzip webapp.zip -d webapp
 rm webapp.zip
+
+sudo mv webapp/webapp.service /etc/systemd/system/webapp.service
 
 sudo groupadd csye6225
 sudo useradd -s /bin/false -g csye6225 -d /home/admin -m csye6225
