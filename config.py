@@ -2,6 +2,7 @@ import os
 from app import app
 from flaskext.mysql import MySQL
 from dotenv import load_dotenv
+import requests
 
 # load environment variables
 # load_dotenv()
