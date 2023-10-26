@@ -62,6 +62,11 @@ print(connection_string)
 
 engine = create_engine(connection_string)
 
+
+def check_database_connection():
+    return engine.connect()
+
+
 # Create tables if they don't exist, or update the schema if needed
 Base.metadata.create_all(engine, checkfirst=True)
 

@@ -8,8 +8,7 @@ import bcrypt
 # function to check the database connectivity
 def check_database_connection():
     try:
-        conn = mysql.connect()
-        conn.ping(reconnect=True)
+        bootstrap.check_database_connection
         print("Database connection successful")
         return True
     except Exception as e:

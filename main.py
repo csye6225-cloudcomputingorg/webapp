@@ -1,7 +1,7 @@
 from app import app
 from flask import request
 import service
-from config import set_db_creds
+# from config import set_db_creds
 from bootstrap import engine
 
 # handles the API requests for GET method
@@ -14,7 +14,7 @@ def health_check():
         print("Method Not Allowed")
         return service.prepare_response(400)
     else:
-        set_db_creds()
+ #       set_db_creds()
         if service.check_database_connection():
             print("Success")
             return service.prepare_response(200)
