@@ -46,9 +46,9 @@ rm webapp.zip
 cd webapp
 
 sudo groupadd csye6225
-sudo useradd -s /bin/false -g csye6225 -d /home/admin/csye6225 -m csye6225
-sudo chown csye6225:csye6225 -R webapp
-# sudo chown -R 755 .
+sudo useradd -s /bin/false -g csye6225 -d /home/admin -m csye6225
+sudo chown csye6225:csye6225 -R .
+sudo chmod -R 755 .
 
 sudo mv webapp.service /etc/systemd/system/webapp.service
 
