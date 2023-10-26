@@ -51,12 +51,12 @@ sudo useradd -s /bin/false -g csye6225 -d /home/admin -m csye6225
 sudo chown csye6225:csye6225 -R .
 sudo chmod -R 755 .
 
-cd webapp
-
 sudo systemctl daemon-reload
 sudo systemctl enable webapp
 sudo systemctl start webapp
 sudo systemctl restart webapp
-sudo systemctl stop webapp
+# sudo systemctl stop webapp
+
+cd webapp || exit
 
 deactivate
