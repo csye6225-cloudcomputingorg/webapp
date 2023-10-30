@@ -1,7 +1,6 @@
 [Unit]
 Description=WebApp
-After=network.target cloud-init.target
-Wants=cloud-init.target
+After=network.target
 
 [Service]
 ExecStart=/home/admin/myenv/bin/python3 /home/admin/webapp/main.py
