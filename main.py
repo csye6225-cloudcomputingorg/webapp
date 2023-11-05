@@ -1,12 +1,16 @@
 from app import app
-from flask import request
+from flask import request, redirect, Response
 import service
 # from config import set_db_creds
 from bootstrap import engine
 
+
+# handles the API requests redirection
+@app.route('/', methods=['GET'])
+def healthz_redirect():
+    return redirect('/v1/assignments')
+
 # handles the API requests for GET method
-
-
 @app.route('/healthz', methods=['GET'])
 def health_check():
 
@@ -14,7 +18,7 @@ def health_check():
         print("Method Not Allowed")
         return service.prepare_response(400)
     else:
- #       set_db_creds()
+     #       set_db_creds()
         if service.check_database_connection():
             print("Success")
             return service.prepare_response(200)
@@ -50,14 +54,14 @@ def handle_create_assignment():
     print("inside post method")
     print(request.headers.get('Authorization'))
     try:
-        _, base64_encoded_credentials = request.headers.get(
-            'Authorization').split(" ", 1)
-        print(base64_encoded_credentials)
+        auth = request.authorization
+        if not auth:
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
         print("Invalid Authorization header format")
-        base64_encoded_credentials = None
+        return service.prepare_response(400)
 
-    if (service.check_creds(base64_encoded_credentials)):
+    if (service.check_creds(auth)):
         request_data = request.get_json()
         mandatory_fields = ['name', 'points', 'num_of_attempts', 'deadline']
 
@@ -65,9 +69,9 @@ def handle_create_assignment():
             return service.prepare_response(400)
 
         assignment_data = service.create_assignment(
-            base64_encoded_credentials, request_data)
+            auth, request_data)
 
-        if(assignment_data):
+        if (assignment_data):
             return service.prepare_assignments_response(201, assignment_data)
         else:
             return service.prepare_response(400)
@@ -81,15 +85,15 @@ def handle_update_assignment(assignment_id):
     print("inside put method")
     print(request.headers.get('Authorization'))
     try:
-        _, base64_encoded_credentials = request.headers.get(
-            'Authorization').split(" ", 1)
-        print(base64_encoded_credentials)
+        auth = request.authorization
+        if not auth:
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
         print("Invalid Authorization header format")
-        base64_encoded_credentials = None
+        return service.prepare_response(400)
 
-    if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials) == "Match"):
+    if (service.check_creds(auth)):
+        if (service.check_owner(assignment_id, auth) == "Match"):
 
             request_data = request.get_json()
             mandatory_fields = ['name', 'points',
@@ -98,12 +102,13 @@ def handle_update_assignment(assignment_id):
             if not service.validate_mandatory_fields(request_data, mandatory_fields):
                 return service.prepare_response(400)
 
-            assignment_data = service.update_assignment(assignment_id, request.get_json())
+            assignment_data = service.update_assignment(
+                assignment_id, request.get_json())
             if assignment_data:
                 return service.prepare_response(204)
             else:
                 return service.prepare_response(400)
-        elif (service.check_owner(assignment_id, base64_encoded_credentials) == "No Match"):
+        elif (service.check_owner(assignment_id, auth) == "No Match"):
             return service.prepare_response(403)
         else:
             return service.prepare_response(404)
@@ -117,18 +122,18 @@ def handle_delete_assignment(assignment_id):
     print("inside delete method")
     print(request.headers.get('Authorization'))
     try:
-        _, base64_encoded_credentials = request.headers.get(
-            'Authorization').split(" ", 1)
-        print(base64_encoded_credentials)
+        auth = request.authorization
+        if not auth:
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
         print("Invalid Authorization header format")
-        base64_encoded_credentials = None
+        return service.prepare_response(400)
 
-    if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials) == "Match"):
-            if(service.delete_assignment(assignment_id)):
+    if (service.check_creds(auth)):
+        if (service.check_owner(assignment_id, auth) == "Match"):
+            if (service.delete_assignment(assignment_id)):
                 return service.prepare_response(204)
-        elif (service.check_owner(assignment_id, base64_encoded_credentials) == "No Match"):
+        elif (service.check_owner(assignment_id, auth) == "No Match"):
             return service.prepare_response(403)
         else:
             return service.prepare_response(404)
@@ -145,14 +150,14 @@ def handle_get_all_assignments():
         return service.prepare_response(400)
     else:
         try:
-            _, base64_encoded_credentials = request.headers.get(
-                'Authorization').split(" ", 1)
-            print(base64_encoded_credentials)
+            auth = request.authorization
+            if not auth:
+                return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
         except ValueError:
             print("Invalid Authorization header format")
-            base64_encoded_credentials = None
+            return service.prepare_response(400)
 
-        if (service.check_creds(base64_encoded_credentials)):
+        if (service.check_creds(auth)):
             print("inside get all assignments method")
             assignment_list = service.get_all_assignment()
             return service.prepare_assignments_response(200, assignment_list)
@@ -165,18 +170,18 @@ def handle_get_by_id_assignment(assignment_id):
     print("inside get by id method")
     print(request.headers.get('Authorization'))
     try:
-        _, base64_encoded_credentials = request.headers.get(
-            'Authorization').split(" ", 1)
-        print(base64_encoded_credentials)
+        auth = request.authorization
+        if not auth:
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
         print("Invalid Authorization header format")
-        base64_encoded_credentials = None
+        return service.prepare_response(400)
 
-    if (service.check_creds(base64_encoded_credentials)):
-        if(service.check_owner(assignment_id, base64_encoded_credentials)=="Match"):
+    if (service.check_creds(auth)):
+        if (service.check_owner(assignment_id, auth) == "Match"):
             assignment_data = service.get_assignment_by_id(assignment_id)
             return service.prepare_assignments_response(200, assignment_data)
-        elif (service.check_owner(assignment_id, base64_encoded_credentials)=="No Match"):
+        elif (service.check_owner(assignment_id, auth) == "No Match"):
             return service.prepare_response(403)
         else:
             return service.prepare_response(404)
