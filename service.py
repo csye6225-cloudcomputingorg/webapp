@@ -31,15 +31,15 @@ def prepare_response(status_code):
     return response
 
 
-def check_creds(base64_encoded_credentials):
+def check_creds(auth):
     print("inside check_creds method")
-    decoded_credentials = base64.b64decode(
-        base64_encoded_credentials).decode("utf-8")
-    email, password = decoded_credentials.split(":")
-    encoded_password = bootstrap.fetch_password(email)
-    print(password.encode('utf-8'))
+    # decoded_credentials = base64.b64decode(
+        # base64_encoded_credentials).decode("utf-8")
+    # email, password = decoded_credentials.split(":")
+    encoded_password = bootstrap.fetch_password(auth.username)
+    print(auth.password.encode('utf-8'))
     print(encoded_password)
-    if bcrypt.checkpw(password.encode('utf-8'), encoded_password):
+    if bcrypt.checkpw(auth.password.encode('utf-8'), encoded_password):
         return True
     else:
         return False
