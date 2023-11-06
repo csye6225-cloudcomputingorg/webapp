@@ -55,11 +55,47 @@ sudo chown csye6225:csye6225 -R webapp
 sudo mv webapp.service /etc/systemd/system/webapp.service
 sudo chmod +x /etc/systemd/system/webapp.service
 
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
+sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+rm ./amazon-cloudwatch-agent.deb
+
 sudo systemctl daemon-reload
 sudo systemctl enable webapp
 sudo systemctl start webapp
 sudo systemctl restart webapp
-sudo systemctl stop webapp
+# sudo systemctl stop webapp
 
+# Configure the CloudWatch Agent
+cat <<EOF | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+{
+    "agent": {
+        "metrics_collection_interval": 60,
+        "run_as_user": "cwagent"
+    },
+    "metrics": {
+        "append_dimensions": {
+            "AutoScalingGroupName": "\${aws:AutoScalingGroupName}",
+            "ImageId": "\${aws:ImageId}",
+            "InstanceId": "\${aws:InstanceId}",
+            "InstanceType": "\${aws:InstanceType}"
+        },
+        "metrics_collected": {
+            "mem": {
+                "measurement": [
+                    "mem_used_percent"
+                ]
+            }
+        }
+    }
+}
+EOF
+
+# Start and enable the CloudWatch Agent service
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m onPremise -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+sudo systemctl enable amazon-cloudwatch-agent
+sudo systemctl start amazon-cloudwatch-agent
+
+# Check the CloudWatch Agent status
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m status
 
 deactivate
