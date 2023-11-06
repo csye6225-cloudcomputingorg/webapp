@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 def setup_logging():
-    log_file = '/home/admin/webapp/var/log/app.log'
+    log_file = 'app.log'
     log_handler = RotatingFileHandler(log_file, maxBytes=10240, backupCount=5)
     log_format = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
 
