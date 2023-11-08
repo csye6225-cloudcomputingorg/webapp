@@ -14,4 +14,4 @@ def setup_logging():
     return logger
 
 logger = setup_logging()
-# logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
