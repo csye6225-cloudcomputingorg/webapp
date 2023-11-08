@@ -43,7 +43,7 @@ sudo apt install -y unzip
 # Download and unzip your web application code
 mkdir webapp
 unzip webapp.zip -d webapp
-rm webapp.zip
+sudo rm webapp.zip
 
 cd webapp || exit
 
@@ -57,7 +57,7 @@ sudo chmod +x /etc/systemd/system/webapp.service
 
 sudo wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
-rm ./amazon-cloudwatch-agent.deb
+sudo rm ./amazon-cloudwatch-agent.deb
 
 sudo systemctl daemon-reload
 sudo systemctl enable webapp
