@@ -55,7 +55,7 @@ sudo chown csye6225:csye6225 -R /home/admin/webapp
 sudo mv webapp.service /etc/systemd/system/webapp.service
 sudo chmod +x /etc/systemd/system/webapp.service
 
-wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
+sudo wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
 rm ./amazon-cloudwatch-agent.deb
 
