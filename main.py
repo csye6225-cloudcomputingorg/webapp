@@ -8,6 +8,11 @@ from statsd_config import handle_metric_count
 # handles the API requests redirection
 @app.route('/', methods=['GET'])
 def healthz_redirect():
+    if (request.data or request.args):
+        logger.error("Method Not Allowed (Request body, query params or path params not allowed)")
+        handle_metric_count("failed_400") 
+        return service.prepare_response(400)
+    
     logger.info("Re-directing to Assignments page")
     return redirect('/v1/assignments')
 
