@@ -65,10 +65,10 @@ def create_assignment(request_auth, request_body):
         return False
 
 
-def check_owner(assignment_id, base64_encoded_credentials):
+def check_owner(assignment_id, auth):
     owner = bootstrap.fetch_owner(assignment_id)
     if owner:
-        if owner == base64_encoded_credentials:
+        if owner == auth.username:
             return "Match"
         else:
             return "No Match"

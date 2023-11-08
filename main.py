@@ -53,18 +53,20 @@ def showMessage(error=None):
 # handles assignment creation
 @app.route('/v1/assignments', methods=['POST'])
 def handle_create_assignment():
-    logger.info("Inside Create Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
-
+    
     try:
         auth = request.authorization
-        logger.debug("Auth Input: " + auth)
+        logger.info("Auth Input: ")
+        logger.debug(auth)
         if not auth:
             logger.error("Unauthorised (Enter credentials)")
             return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
         logger.error("Invalid Authorization header format")
         return service.prepare_response(400)
+
+    logger.info("Inside Create Assignment Method")
+    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         request_data = request.get_json()
@@ -91,9 +93,7 @@ def handle_create_assignment():
 # handles assignment updates
 @app.route('/v1/assignments/<assignment_id>', methods=['PUT'])
 def handle_update_assignment(assignment_id):
-    logger.info("Inside Update Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
-    
+        
     try:
         auth = request.authorization
         if not auth:
@@ -102,6 +102,9 @@ def handle_update_assignment(assignment_id):
     except ValueError:
         logger.error("Invalid Authorization header format")
         return service.prepare_response(400)
+
+    logger.info("Inside Update Assignment Method")
+    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
@@ -136,8 +139,6 @@ def handle_update_assignment(assignment_id):
 # handles delete assignments
 @app.route('/v1/assignments/<assignment_id>', methods=['DELETE'])
 def handle_delete_assignment(assignment_id):
-    logger.info("Inside Delete Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
     
     try:
         auth = request.authorization
@@ -147,6 +148,9 @@ def handle_delete_assignment(assignment_id):
     except ValueError:
         logger.error("Invalid Authorization header format")
         return service.prepare_response(400)
+
+    logger.info("Inside Delete Assignment Method")
+    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
@@ -167,6 +171,16 @@ def handle_delete_assignment(assignment_id):
 # handles get all assignments
 @app.route('/v1/assignments', methods=['GET'])
 def handle_get_all_assignments():
+    
+    try:
+        auth = request.authorization
+        if not auth:
+            logger.error("Unauthorised, enter Auth values")
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    except ValueError:
+            logger.error("Invalid Authorization header format")
+            return service.prepare_response(400)
+
     logger.info("Inside Get All Assignment Method")
     logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
 
@@ -174,14 +188,6 @@ def handle_get_all_assignments():
         logger.error("Method Not Allowed (Request body, query params or path params not allowed)")
         return service.prepare_response(400)
     else:
-        try:
-            auth = request.authorization
-            if not auth:
-                logger.error("Unauthorised, enter Auth values")
-                return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
-        except ValueError:
-            logger.error("Invalid Authorization header format")
-            return service.prepare_response(400)
 
         if (service.check_creds(auth)):
             # print("inside get all assignments method")
@@ -195,8 +201,6 @@ def handle_get_all_assignments():
 
 @app.route('/v1/assignments/<assignment_id>', methods=['GET'])
 def handle_get_by_id_assignment(assignment_id):
-    logger.info("Inside Get Assignment by ID Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
     
     try:
         auth = request.authorization
@@ -206,6 +210,9 @@ def handle_get_by_id_assignment(assignment_id):
     except ValueError:
         logger.error("Invalid Authorization header format")
         return service.prepare_response(400)
+    
+    logger.info("Inside Get Assignment by ID Method")
+    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
