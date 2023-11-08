@@ -127,8 +127,8 @@ def create_assignment_db(request_auth, request_body):
     id = uuid1()
     print(id)
     assignment = Assignment(id=str(id), name=request_body['name'], points=request_body['points'], num_of_attempts=request_body['num_of_attempts'],
-                            deadline=parsed_date, assignment_created=datetime.now(), assignment_updated=datetime.now(), owner=request_auth)
-    print(assignment)
+                            deadline=parsed_date, assignment_created=datetime.now(), assignment_updated=datetime.now(), owner=request_auth.username)
+    print(assignment.owner)
     session.add(assignment)
     session.commit()
 
