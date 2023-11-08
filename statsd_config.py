@@ -2,7 +2,7 @@ import statsd
 from flask import request
 from logging_config import logger
 
-statsd_client = statsd.StatsClient(host='localhost', port=8125)
+statsd_client = statsd.StatsClient('localhost', 8125)
 
 
 def handle_metric_count(status):
