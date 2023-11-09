@@ -8,30 +8,52 @@ from statsd_config import handle_metric_count
 # handles the API requests redirection
 @app.route('/', methods=['GET'])
 def redirect():
-    if (request.data or request.args):
-        logger.error("Method Not Allowed (Request body, query params or path params not allowed)")
-        handle_metric_count("failed_400") 
+
+    try:
+        auth = request.authorization
+        logger.info("Auth Input: ")
+        logger.debug(auth)
+        if not auth:
+            logger.error("Unauthorised (Enter credentials)")
+            handle_metric_count("failed_401")
+            return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    except ValueError:
+        logger.error("Invalid Authorization header format")
+        handle_metric_count("failed_400")
         return service.prepare_response(400)
-    
-    logger.info("Re-directing to Assignments page")
-    return redirect('/v1/assignments')
+
+    if (request.data or request.args):
+        logger.error(
+            "Method Not Allowed (Request body, query params or path params not allowed)")
+        handle_metric_count("failed_400")
+        return service.prepare_response(400)
+    else:
+        if (service.check_creds(auth)):
+            logger.info("Re-directing to Assignments page")
+            return redirect('/v1/assignments')
+        else:
+            logger.error("Unauthorised, check credentials")
+            handle_metric_count("failed_401")
+            return service.prepare_response(401)
+
 
 # handles the API requests for GET method
 @app.route('/healthz', methods=['GET'])
 def health_check():
 
     if (request.data or request.args):
-        logger.error("Method Not Allowed (Request body, query params or path params not allowed)")
-        handle_metric_count("failed_400") 
+        logger.error(
+            "Method Not Allowed (Request body, query params or path params not allowed)")
+        handle_metric_count("failed_400")
         return service.prepare_response(400)
     else:
         if service.check_database_connection():
             logger.info("Successful Database Connection")
-            handle_metric_count("success_200") 
+            handle_metric_count("success_200")
             return service.prepare_response(200)
         else:
             logger.error("Service Unavailable (Database Connection Refused)")
-            handle_metric_count("failed_503") 
+            handle_metric_count("failed_503")
             return service.prepare_response(503)
 
 
@@ -62,7 +84,7 @@ def showMessage(error=None):
 # handles assignment creation
 @app.route('/v1/assignments', methods=['POST'])
 def handle_create_assignment():
-    
+
     try:
         auth = request.authorization
         logger.info("Auth Input: ")
@@ -77,7 +99,8 @@ def handle_create_assignment():
         return service.prepare_response(400)
 
     logger.info("Inside Create Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
+    logger.debug("Authorisation Header: " +
+                 request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         request_data = request.get_json()
@@ -96,7 +119,8 @@ def handle_create_assignment():
             handle_metric_count("success_201")
             return service.prepare_assignments_response(201, assignment_data)
         else:
-            logger.error("Bad Request, check values for points and num_of_attempts fields")
+            logger.error(
+                "Bad Request, check values for points and num_of_attempts fields")
             handle_metric_count("failed_400")
             return service.prepare_response(400)
     else:
@@ -108,7 +132,7 @@ def handle_create_assignment():
 # handles assignment updates
 @app.route('/v1/assignments/<assignment_id>', methods=['PUT'])
 def handle_update_assignment(assignment_id):
-        
+
     try:
         auth = request.authorization
         if not auth:
@@ -121,7 +145,8 @@ def handle_update_assignment(assignment_id):
         return service.prepare_response(400)
 
     logger.info("Inside Update Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
+    logger.debug("Authorisation Header: " +
+                 request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
@@ -142,7 +167,8 @@ def handle_update_assignment(assignment_id):
                 handle_metric_count("success_204")
                 return service.prepare_response(204)
             else:
-                logger.error("Bad Request, check values for points and num_of_attempts fields")
+                logger.error(
+                    "Bad Request, check values for points and num_of_attempts fields")
                 handle_metric_count("failed_400")
                 return service.prepare_response(400)
         elif (service.check_owner(assignment_id, auth) == "No Match"):
@@ -162,7 +188,7 @@ def handle_update_assignment(assignment_id):
 # handles delete assignments
 @app.route('/v1/assignments/<assignment_id>', methods=['DELETE'])
 def handle_delete_assignment(assignment_id):
-    
+
     try:
         auth = request.authorization
         if not auth:
@@ -175,7 +201,8 @@ def handle_delete_assignment(assignment_id):
         return service.prepare_response(400)
 
     logger.info("Inside Delete Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
+    logger.debug("Authorisation Header: " +
+                 request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
@@ -200,7 +227,7 @@ def handle_delete_assignment(assignment_id):
 # handles get all assignments
 @app.route('/v1/assignments', methods=['GET'])
 def handle_get_all_assignments():
-    
+
     try:
         auth = request.authorization
         if not auth:
@@ -208,15 +235,17 @@ def handle_get_all_assignments():
             handle_metric_count("failed_401")
             return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
     except ValueError:
-            logger.error("Invalid Authorization header format")
-            handle_metric_count("failed_400")
-            return service.prepare_response(400)
+        logger.error("Invalid Authorization header format")
+        handle_metric_count("failed_400")
+        return service.prepare_response(400)
 
     logger.info("Inside Get All Assignment Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
+    logger.debug("Authorisation Header: " +
+                 request.headers.get('Authorization'))
 
     if (request.data or request.args):
-        logger.error("Method Not Allowed (Request body, query params or path params not allowed)")
+        logger.error(
+            "Method Not Allowed (Request body, query params or path params not allowed)")
         handle_metric_count("failed_400")
         return service.prepare_response(400)
     else:
@@ -235,7 +264,7 @@ def handle_get_all_assignments():
 
 @app.route('/v1/assignments/<assignment_id>', methods=['GET'])
 def handle_get_by_id_assignment(assignment_id):
-    
+
     try:
         auth = request.authorization
         if not auth:
@@ -246,9 +275,10 @@ def handle_get_by_id_assignment(assignment_id):
         logger.error("Invalid Authorization header format")
         handle_metric_count("failed_400")
         return service.prepare_response(400)
-    
+
     logger.info("Inside Get Assignment by ID Method")
-    logger.debug("Authorisation Header: " + request.headers.get('Authorization'))
+    logger.debug("Authorisation Header: " +
+                 request.headers.get('Authorization'))
 
     if (service.check_creds(auth)):
         if (service.check_owner(assignment_id, auth) == "Match"):
