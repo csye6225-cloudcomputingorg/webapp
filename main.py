@@ -7,7 +7,7 @@ from statsd_config import handle_metric_count
 
 # handles the API requests redirection
 @app.route('/', methods=['GET'])
-def redirect():
+def redirect_api():
 
     try:
         auth = request.authorization
