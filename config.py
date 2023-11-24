@@ -21,7 +21,7 @@ for line in lines:
     if line.strip().startswith("export "):
         parts = line.strip()[7:].split("=")
         if len(parts) == 2:
-            key = parts[0].strip()  # Remove "export " prefix
+            key = parts[0].strip()
             value = parts[1].strip()
             environment_variables[key] = value
 

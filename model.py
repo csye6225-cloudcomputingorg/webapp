@@ -21,6 +21,7 @@ class Assignment(Base):
     name = Column(String(50), unique=False, nullable=False)
     points = Column(Integer, unique=False, nullable=False)
     num_of_attempts = Column(Integer, unique=False, nullable=False)
+    num_of_submission = Column(Integer, unique=False, nullable=False)
     deadline = Column(String(100), unique=False, nullable=False)
     assignment_created = Column(DateTime, unique=False, nullable=False)
     assignment_updated = Column(DateTime, unique=False, nullable=False)
