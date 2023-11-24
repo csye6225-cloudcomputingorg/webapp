@@ -12,18 +12,6 @@ from dotenv import load_dotenv
 import requests
 
 
-# load environment variables
-# load_dotenv()
-# Database configuration
-# db_password = urllib.parse.quote(os.environ.get('db_password'))
-# db_password = urllib.parse.quote(os.getenv('db_password'))
-# DATABASE_URL = f"mysql+pymysql://{os.getenv('db_user')}:{db_password}@{os.getenv('db_host')}"
-# print(DATABASE_URL)
-# database = create_engine(DATABASE_URL)
-
-# Connect to the MySQL server and create the database.
-# database.execute(f"CREATE DATABASE IF NOT EXISTS {os.getenv('db_name')}")
-
 # Fetch user data
 user_data_url = "http://169.254.169.254/latest/user-data"
 response = requests.get(user_data_url)
@@ -38,7 +26,7 @@ for line in lines:
     if line.strip().startswith("export "):
         parts = line.strip()[7:].split("=")
         if len(parts) == 2:
-            key = parts[0].strip()  # Remove "export " prefix
+            key = parts[0].strip()
             value = parts[1].strip()
             environment_variables[key] = value
 
@@ -48,14 +36,15 @@ db_name = environment_variables.get("DB_NAME")
 db_user = environment_variables.get("DB_USER")
 db_password = environment_variables.get("DB_PASSWORD")
 
+# db_password = urllib.parse.quote('Cloud@2023')
+# DATABASE_URL = f"mysql+pymysql://csye6225:{db_password}@localhost/csye6225cloudcomputing"
 
 # load environment variables
 DATABASE_URL = f"mysql+pymysql://{db_user}:{db_password}@{db_host}"
 print(DATABASE_URL)
 database = create_engine(DATABASE_URL)
 
-# Connect to the MySQL server and create the database.
-# database.execute(f"CREATE DATABASE IF NOT EXISTS {os.environ.get('DATABASE')}")
+# connection_string = f"mysql+pymysql://csye6225:{db_password}@localhost/csye6225cloudcomputing"
 
 connection_string = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
 print(connection_string)
@@ -74,22 +63,13 @@ Base.metadata.create_all(engine, checkfirst=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# bcrypt = Bcrypt(app)
-
 # create users from the csv
 with open('/home/admin/webapp/opt/user.csv', 'r') as csvfile:
+# with open('opt/user.csv', 'r') as csvfile:
 
     csvreader = csv.DictReader(csvfile)
 
-    # if csvreader.fieldnames is not None:
-    #         print("Header row:", csvreader.fieldnames)
-
     for row in csvreader:
-
-        # if set(csvreader.fieldnames).issubset(row.keys()):
-        #     print("Row data:", row)
-        # else:
-        #     print("Missing columns in row:", row)
 
         first_name = row['first_name']
         last_name = row['last_name']
@@ -127,20 +107,20 @@ def create_assignment_db(request_auth, request_body):
     id = uuid1()
     print(id)
     assignment = Assignment(id=str(id), name=request_body['name'], points=request_body['points'], num_of_attempts=request_body['num_of_attempts'],
-                            deadline=parsed_date, assignment_created=datetime.now(), assignment_updated=datetime.now(), owner=request_auth.username)
+                            deadline=parsed_date, assignment_created=datetime.now(), assignment_updated=datetime.now(), owner=request_auth.username, num_of_submission=0)
     print(assignment.owner)
     session.add(assignment)
     session.commit()
 
     assignment_data = {
-            'id': assignment.id,
-            'name': assignment.name,
-            'points': assignment.points,
-            'num_of_attempts':assignment.num_of_attempts,
-            'deadline': assignment.deadline,
-            'assignment_created': assignment.assignment_created.isoformat(),
-            'assignment_updated': assignment.assignment_updated.isoformat(),
-        }
+        'id': assignment.id,
+        'name': assignment.name,
+        'points': assignment.points,
+        'num_of_attempts': assignment.num_of_attempts,
+        'deadline': assignment.deadline,
+        'assignment_created': assignment.assignment_created.isoformat(),
+        'assignment_updated': assignment.assignment_updated.isoformat(),
+    }
 
     return assignment_data
 
@@ -148,7 +128,7 @@ def create_assignment_db(request_auth, request_body):
 def fetch_owner(assignment_id):
     try:
         owner = session.query(Assignment).filter(
-        Assignment.id == assignment_id).first().owner
+            Assignment.id == assignment_id).first().owner
         print(owner)
         return owner
     except:
@@ -169,19 +149,19 @@ def update_assignment_db(assignment_id, request_body):
     assignment.num_of_attempts = request_body['num_of_attempts']
     assignment.deadline = parsed_date
     assignment.assignment_updated = datetime.now()
-    
+
     session.commit()
-    
+
     return True
 
 
 def delete_assignment_db(assignment_id):
     assignment = session.query(Assignment).filter(
         Assignment.id == assignment_id).first()
-    
+
     session.delete(assignment)
     session.commit()
-    
+
     deleted_assignment = session.query(Assignment).get(assignment_id)
     if deleted_assignment is None:
         return True
@@ -189,22 +169,45 @@ def delete_assignment_db(assignment_id):
         return False
 
 
+def update_assignment_submission_count(assignment_id, num_of_attempts):
+    try:
+        assignment = session.query(Assignment).filter(
+            Assignment.id == assignment_id).first()
+
+        id = uuid1()
+
+        if (assignment.num_of_submission < num_of_attempts):
+
+            assignment.num_of_submission += 1
+            session.commit()
+            status = "submitted"
+        else:
+            status = "exceeded"
+
+        return id, status
+
+    except:
+        id = -1,
+        status = "failed"
+        return id, status
+
+
 def get_all_assignments_db():
     assignments = session.query(Assignment).all()
-    
+
     assignment_list = []
     for assignment in assignments:
         assignment_data = {
             'id': assignment.id,
             'name': assignment.name,
             'points': assignment.points,
-            'num_of_attempts':assignment.num_of_attempts,
+            'num_of_attempts': assignment.num_of_attempts,
             'deadline': assignment.deadline,
             'assignment_created': assignment.assignment_created.isoformat(),
             'assignment_updated': assignment.assignment_updated.isoformat(),
         }
         assignment_list.append(assignment_data)
-        
+
     return assignment_list
 
 
@@ -213,16 +216,17 @@ def get_assignment_by_id_db(assignment_id):
         Assignment.id == assignment_id).first()
 
     assignment_data = {
-            'id': assignment.id,
-            'name': assignment.name,
-            'points': assignment.points,
-            'num_of_attempts':assignment.num_of_attempts,
-            'deadline': assignment.deadline,
-            'assignment_created': assignment.assignment_created.isoformat(),
-            'assignment_updated': assignment.assignment_updated.isoformat(),
-        }
-    
+        'id': assignment.id,
+        'name': assignment.name,
+        'points': assignment.points,
+        'num_of_attempts': assignment.num_of_attempts,
+        'deadline': assignment.deadline,
+        'assignment_created': assignment.assignment_created.isoformat(),
+        'assignment_updated': assignment.assignment_updated.isoformat(),
+    }
+
     return assignment_data
+
 
 # Close the session
 session.close()
