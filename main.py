@@ -38,7 +38,7 @@ def health_check():
         return service.prepare_response(400)
     else:
         if service.check_database_connection():
-            # if 1:
+        # if 1:
             logger.info("Successful Database Connection")
             handle_metric_count("success_200")
             return service.prepare_response(200)
@@ -229,9 +229,7 @@ def handle_get_by_id_assignment(assignment_id):
         handle_metric_count("failed_400")
         return service.prepare_response(400)
     else:
-
         return service.get_assignment_by_id(auth, assignment_id)
-
 
 @app.route('/v1/assignments/<assignment_id>/submission', methods=['POST'])
 def handle_assignment_submission(assignment_id):
