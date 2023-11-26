@@ -274,7 +274,7 @@ def prepare_assignments_response(status_code, assignment_list):
 
 
 def post_to_sns_topic(topic_arn, user_email, release_tag, repo_url):
-    sns = boto3.client('sns', region_name='your-region')
+    sns = boto3.client('sns', region_name='us-east-1') #remove hardcoded value
 
     message = {
         'user_email': user_email,
