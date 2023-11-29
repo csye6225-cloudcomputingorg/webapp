@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from model import Base, User, Assignment
+from model import Base, User, Assignment, Submission
 import os
 import csv
 import urllib
@@ -192,6 +192,27 @@ def update_assignment_submission_count(assignment_id, num_of_attempts):
         return id, status
 
 
+def submit_assignnment(assignment_id, username, submission_url ):
+    
+    id = uuid1()
+    submission = Submission(id=str(id), assignment_id=assignment_id, submission_url=submission_url, user_id=username,
+                            submission_date=datetime.now(), submission_updated=datetime.now())
+    
+    print(submission)
+    session.add(submission)
+    session.commit()
+    
+    submission_data = {
+                'id': id,
+                'assignment_id': assignment_id,
+                'submission_url': submission_url,
+                'submission_date': datetime.now(),
+                'submission_updated': datetime.now(),
+            }
+    
+    return submission_data
+
+
 def get_all_assignments_db():
     assignments = session.query(Assignment).all()
 
@@ -227,6 +248,18 @@ def get_assignment_by_id_db(assignment_id):
 
     return assignment_data
 
+
+def get_number_of_submissions(username, assignment):
+   
+    submission_count = session.query(Submission).filter(
+        Submission.assignment_id == assignment['id'],
+        Submission.user_id == username
+    ).count()
+    
+    if submission_count < assignment['num_of_attempts']:
+        return True
+    else:
+        return False
 
 # Close the session
 session.close()

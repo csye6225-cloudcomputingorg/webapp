@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -13,10 +14,11 @@ class User(Base):
     password = Column(VARBINARY(255), unique=True, nullable=False)
     account_created = Column(DateTime, unique=False, nullable=False)
     account_updated = Column(DateTime, unique=False, nullable=False)
-    
+
+
 class Assignment(Base):
     __tablename__ = 'assignments'
-    
+
     id = Column(String(255), unique=True, primary_key=True)
     name = Column(String(50), unique=False, nullable=False)
     points = Column(Integer, unique=False, nullable=False)
@@ -26,3 +28,14 @@ class Assignment(Base):
     assignment_created = Column(DateTime, unique=False, nullable=False)
     assignment_updated = Column(DateTime, unique=False, nullable=False)
     owner = Column(String(100), nullable=False)
+
+
+class Submission(Base):
+    __tablename__ = 'submission'
+
+    id = Column(String(255), unique=True, primary_key=True)
+    user_id = Column(String(50), unique=False, nullable=False)
+    assignment_id = Column(String(50), unique=False, nullable=False)
+    submission_url = Column(String(100), unique=False, nullable=False)
+    submission_date = Column(DateTime, unique=False, nullable=False)
+    submission_updated = Column(DateTime, unique=False, nullable=False)
