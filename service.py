@@ -207,46 +207,74 @@ def get_assignment_by_id(auth, assignment_id):
         return prepare_response(401)
 
 
+def get_assignment_submission(auth, assignment_id):
+    assignment_data = bootstrap.get_assignment_by_id_db(assignment_id)
+
+    if (assignment_data):
+        if (bootstrap.get_number_of_submissions(auth.username, assignment_data)):
+            return 200, assignment_data
+        else:
+            logger.error(
+                "Number of Attempts Exceeded. No further submissions are allowed.")
+            return 429, "attempts_exceeded"
+    else:
+        return 404, "assignment_not_found"
+
+
 def submit_assignment(auth, response, request):
     request_data = request.get_json()
 
     pattern = re.compile(
         r'^https://github\.com/[\w-]+/[\w-]+/archive/refs/tags/v\d+\.\d+\.\d+\.zip$')
+    
+    print(response)
+    print(request_data)
 
-    assignment_id = response.get_json()['id']
-    num_of_attempts = response.get_json()['num_of_attempts']
+    assignment_id = response['id']
+    num_of_attempts = response['num_of_attempts']
     deadline = datetime.strptime(
-        response.get_json()['deadline'], '%Y-%m-%d %H:%M:%S.%f')
+        response['deadline'], '%Y-%m-%d %H:%M:%S.%f')
     if len(request_data.keys()) == 1 and 'submission_url' in request_data and request_data['submission_url'] is not None:
         submission_url = request_data['submission_url']
         match = pattern.match(submission_url)
 
         if match:
             if deadline > datetime.now():
-                id, status = bootstrap.update_assignment_submission_count(
-                    assignment_id, num_of_attempts)
+                # id, status = bootstrap.update_assignment_submission_count(
+                #     assignment_id, num_of_attempts)
 
-                assignment_data = {
-                    'id': id,
-                    'assignment_id': assignment_id,
-                    'submission_url': submission_url,
-                    'submission_date': datetime.now(),
-                    'submission_updated': datetime.now(),
-                }
+                # assignment_data = {
+                #     'id': id,
+                #     'assignment_id': assignment_id,
+                #     'submission_url': submission_url,
+                #     'submission_date': datetime.now(),
+                #     'submission_updated': datetime.now(),
+                # }
 
-                print(match)
-                if (status == 'submitted'):
+                # print(match)
+
+                # bootstrap.submit_assignnment(assignment_id, auth.username, submission_url)
+
+                # if (status == 'submitted'):
+
+                submission_data = bootstrap.submit_assignnment(
+                    assignment_id, auth.username, submission_url)
+
+                if (submission_data):
                     sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
                     user_email = auth.username
-                    release_tag = re.search(
-                        r'/v([\d.]+)\.zip$', submission_url)
-                    repo_url = submission_url.split("/archive")[0]
-
+                    release_tag = submission_url.rsplit(
+                        '/', 1)[-1].split('.zip')[0]
+                    # repo_url = submission_url.split("/archive")[0]
+                    repo_url = submission_url
                     logger.debug(os.environ.get('SNS_TOPIC_ARN'))
 
-                    post_to_sns_topic(sns_topic_arn, user_email, release_tag, repo_url)
+                    post_to_sns_topic(
+                        sns_topic_arn, user_email, release_tag, repo_url)
 
-                return assignment_data, status
+                    return submission_data, 201
+                else:
+                    return "Database_Error", 503
             else:
                 logger.error(
                     "The submission deadline has passed. No further submissions are allowed.")
@@ -274,7 +302,8 @@ def prepare_assignments_response(status_code, assignment_list):
 
 
 def post_to_sns_topic(topic_arn, user_email, release_tag, repo_url):
-    sns = boto3.client('sns', region_name='us-east-1') #remove hardcoded value
+    # remove hardcoded value
+    sns = boto3.client('sns', region_name=environment_variables.get("AWS_REGION"))
 
     message = {
         'user_email': user_email,

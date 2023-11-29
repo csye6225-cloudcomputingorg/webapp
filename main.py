@@ -38,7 +38,7 @@ def health_check():
         return service.prepare_response(400)
     else:
         if service.check_database_connection():
-        # if 1:
+            # if 1:
             logger.info("Successful Database Connection")
             handle_metric_count("success_200")
             return service.prepare_response(200)
@@ -229,7 +229,9 @@ def handle_get_by_id_assignment(assignment_id):
         handle_metric_count("failed_400")
         return service.prepare_response(400)
     else:
+
         return service.get_assignment_by_id(auth, assignment_id)
+
 
 @app.route('/v1/assignments/<assignment_id>/submission', methods=['POST'])
 def handle_assignment_submission(assignment_id):
@@ -238,27 +240,33 @@ def handle_assignment_submission(assignment_id):
         request, "Inside Post Assignment Submission Method")
 
     if (service.check_creds(auth)):
-        assignment_response = service.get_assignment_by_id(auth, assignment_id)
+        #assignment_response = service.get_assignment_by_id(auth, assignment_id)
+        
+        status, assignment_response = service.get_assignment_submission(auth, assignment_id)
 
-        if assignment_response.status_code == 200:
-            data, status = service.submit_assignment(auth, response, request)
-            if (status == 'submitted'):
+        if status == 200:
+            data, status = service.submit_assignment(auth, assignment_response, request)
+            if (status == 201):
                 response = service.prepare_assignments_response(201, data)
+                logger.info("Assignment Submitted")
                 response.status = '201 SUBMISSION ACCEPTED'
-            elif (status == 'exceeded'):
-                response = service.prepare_assignments_response(429, data)
-                response.status = '429 SUBMISSION ATTEMPTS EXCEEDED'
             elif (status == 'deadlinePassed'):
                 response = service.prepare_response(404)
                 response.status = '404 SUBMISSION DEADLINE PASSED'
+                logger.error("SUBMISSION DEADLINE PASSED")
             else:
                 response = service.prepare_response(400)
-        elif assignment_response.status_code == 404:
+                logger.error("BAD REQUESTS")
+        elif status == 429:
+                response = service.prepare_response(429)
+                response.status = '429 SUBMISSION ATTEMPTS EXCEEDED'
+                logger.error("SUBMISSION ATTEMPTS EXCEEDED")
+        elif status == 404:
             response = service.prepare_response(404)
             logger.error("Assignment not found")
-        elif assignment_response.status_code == 403:
-            response = service.prepare_response(403)
-            logger.error("Access to assignment is Forbidden")
+        # elif assignment_response.status_code == 403:
+        #     response = service.prepare_response(403)
+        #     logger.error("Access to assignment is Forbidden")
         else:
             response = service.prepare_response(503)
             logger.error(service.prepare_response(503))
