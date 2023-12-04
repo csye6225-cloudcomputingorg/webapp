@@ -39,6 +39,12 @@ jobs:
           TEMPLATE_ID=$(aws ec2 describe-launch-templates --query 'LaunchTemplates | sort_by(@, &CreateTime) | [-1].LaunchTemplateId' --output text)
           LATEST_VERSION=$(aws ec2 describe-launch-template-versions --launch-template-id $TEMPLATE_ID --query 'LaunchTemplateVersions | sort_by(@, &VersionNumber) | [-1].VersionNumber' --output text)
           aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --source-version $LATEST_VERSION --launch-template-data '{"ImageId":"'"$LATEST_AMI_ID"'"}'
+          
+          if [ "$TEMPLATE_ID" == "None" ]; then
+            echo "No Launch Template Available"
+            exit 1
+          fi
+          
           echo "Launch Template ID: $TEMPLATE_ID $LATEST_VERSION"
           echo "::set-output name=template_id::$TEMPLATE_ID"
 
@@ -46,6 +52,12 @@ jobs:
         id: fetch_asg
         run: |
           ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, 'web-asg')].AutoScalingGroupName | [0]" --output text)
+          
+          if [ "$ASG_NAME" == "None" ]; then
+            echo "No Auto Scaling Group Available"
+            exit 1
+          fi
+
           echo "Fetched ASG Name: $ASG_NAME"
           echo "::set-output name=asg_name::$ASG_NAME"
 
@@ -59,9 +71,10 @@ jobs:
       - name: Wait for Instance Refresh to Complete
         run: |
           STATUS="pending"
+
           while [ "$STATUS" != "Successful" ]; do
             echo "Waiting for instance refresh to complete..."
-            sleep 30  # Wait for 30 seconds before the next check
+            sleep 100  # Wait for 100 seconds before the next check
 
             ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, 'web-asg')].AutoScalingGroupName | [0]" --output text)
             STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name $ASG_NAME --instance-refresh-ids $REFRESH_ID --query 'InstanceRefreshes[0].Status' --output text)
@@ -73,7 +86,6 @@ jobs:
               exit 1
             fi
 
-            echo "Current status: $STATUS"
           done
 
-          echo "Instance refresh completed successfully
+          echo "Instance refresh completed successfully"
