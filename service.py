@@ -271,7 +271,7 @@ def submit_assignment(auth, response, request):
         response['deadline'], '%Y-%m-%d %H:%M:%S.%f')
     if len(request_data.keys()) == 1 and 'submission_url' in request_data and request_data['submission_url'] is not None:
         submission_url = request_data['submission_url']
-        match = pattern.match(submission_url)
+        match = pattern.search(submission_url)
 
         if match:
             if deadline > datetime.now():

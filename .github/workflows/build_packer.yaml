@@ -13,7 +13,7 @@ jobs:
       AWS_REGION: us-east-1
       DEFAULT_SUBNET: subnet-025f87a6da259c0bd
       ASG_NAME: web-asg
-      LAUNCH_CONFIGURATION_NAME: webapp-launch-template
+      LAUNCH_TEMPLATE_NAME: webapp-launch-template
 
     steps:
       - name: Echo Message
@@ -78,21 +78,29 @@ jobs:
           aws ec2 modify-image-attribute --image-id $AMI_ID --launch-permission "{\"Add\":[{\"UserId\":\"$DEMO_ACCOUNT_ID\"}]}"
 
       ##### Assignment 10 Changes Begin #####
-      - name: Set up AWS CLI
+      - name: Set up AWS CLI for DEMO
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
           aws-region: ${{ env.AWS_REGION }} # us-east-1
 
-      - name: Create Launch Configuration
+      - name: Create Launch Template Version
         run: |
-          aws autoscaling create-launch-configuration \
-            --launch-configuration-name ${{ env.LAUNCH_CONFIGURATION_NAME }} \
-            --image-id ${{ env.AMI_ID }} \
-            --key-name ${{ secrets.EC2_KEY_NAME }} \
-            --instance-type ${{ secrets.EC2_INSTANCE_TYPE }} \
+          aws ec2 create-launch-template-version \
+            --launch-template-name ${{ env.LAUNCH_TEMPLATE_NAME }} \
+            --source-version ${{ env.AMI_ID }} \
+            --version-description "Latest AMI version" \
             --region ${{ env.AWS_REGION }}
+
+      # - name: Create Launch Configuration
+      #   run: |
+      #     aws autoscaling create-launch-configuration \
+      #       --launch-configuration-name ${{ env.LAUNCH_CONFIGURATION_NAME }} \
+      #       --image-id ${{ env.AMI_ID }} \
+      #       --key-name ${{ secrets.EC2_KEY_NAME }} \
+      #       --instance-type ${{ secrets.EC2_INSTANCE_TYPE }} \
+      #       --region ${{ env.AWS_REGION }}
 
       # - name: Create Auto Scaling Group
       #   run: |
@@ -128,4 +136,4 @@ jobs:
 
       # - name: Check Instance Refresh Status
       #   run: echo "Instance Refresh is complete."
-      #   if: steps.instance-refresh.outputs.refreshed == 'true'
+      # if: steps.instance-refresh.outputs.refreshed == 'true'
