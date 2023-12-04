@@ -45,7 +45,7 @@ jobs:
       - name: Fetch ASG Name
         id: fetch_asg
         run: |
-          ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, ${{ env.ASG_NAME }})].AutoScalingGroupName | [0]" --output text)
+          ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, 'web-asg')].AutoScalingGroupName | [0]" --output text)
           echo "Fetched ASG Name: $ASG_NAME"
           echo "::set-output name=asg_name::$ASG_NAME"
 
@@ -63,7 +63,7 @@ jobs:
             echo "Waiting for instance refresh to complete..."
             sleep 30  # Wait for 30 seconds before the next check
 
-            ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, ${{ env.ASG_NAME }})].AutoScalingGroupName | [0]" --output text)
+            ASG_NAME=$(aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?contains(AutoScalingGroupName, 'web-asg')].AutoScalingGroupName | [0]" --output text)
             STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name $ASG_NAME --instance-refresh-ids $REFRESH_ID --query 'InstanceRefreshes[0].Status' --output text)
             
             echo "Current status: $STATUS"
