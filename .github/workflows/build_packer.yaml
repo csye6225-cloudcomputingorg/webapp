@@ -99,13 +99,14 @@ jobs:
         run: |
           LATEST_AMI_ID=$(aws ec2 describe-images --owners $OWNER_ID --filters "Name=is-public,Values=false" "Name=state,Values=available" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
           TEMPLATE_ID=$(aws ec2 describe-launch-templates --query 'LaunchTemplates | sort_by(@, &CreateTime) | [-1].LaunchTemplateId' --output text)
-          LATEST_VERSION=$(aws ec2 describe-launch-template-versions --launch-template-id $TEMPLATE_ID --query 'LaunchTemplateVersions | sort_by(@, &VersionNumber) | [-1].VersionNumber' --output text)
-          aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --source-version $LATEST_VERSION --launch-template-data '{"ImageId":"'"$LATEST_AMI_ID"'"}'
           
           if [ "$TEMPLATE_ID" == "None" ]; then
             echo "No Launch Template Available"
             exit 1
           fi
+
+          LATEST_VERSION=$(aws ec2 describe-launch-template-versions --launch-template-id $TEMPLATE_ID --query 'LaunchTemplateVersions | sort_by(@, &VersionNumber) | [-1].VersionNumber' --output text)
+          aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --source-version $LATEST_VERSION --launch-template-data '{"ImageId":"'"$LATEST_AMI_ID"'"}'
           
           echo "Launch Template ID: $TEMPLATE_ID $LATEST_VERSION"
           echo "::set-output name=template_id::$TEMPLATE_ID"
