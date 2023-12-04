@@ -59,7 +59,7 @@ jobs:
       - name: Wait for Instance Refresh to Complete
         run: |
           STATUS="pending"
-          while [ "$STATUS" != "successful" ]; do
+          while [ "$STATUS" != "Successful" ]; do
             echo "Waiting for instance refresh to complete..."
             sleep 30  # Wait for 30 seconds before the next check
 
