@@ -9,6 +9,12 @@ jobs:
   build-packer:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: us-east-1
+      DEFAULT_SUBNET: subnet-025f87a6da259c0bd
+      ASG_NAME: web-asg
+      LAUNCH_CONFIGURATION_NAME: webapp-launch-template
+
     steps:
       - name: Echo Message
         run: echo "Pull request has been merged to the organization's repository."
@@ -18,7 +24,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }} # us-east-1
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -27,11 +33,11 @@ jobs:
         uses: hashicorp/setup-packer@main
         id: setup
         with:
-            version: "latest"
+          version: "latest"
 
       - name: Packer init
         run: |
-              packer init ami.debian-packer-aws.pkr.hcl
+          packer init ami.debian-packer-aws.pkr.hcl
 
       - name: Build Artifact
         run: |
@@ -41,19 +47,19 @@ jobs:
       - name: Publish Web App Artifact
         uses: actions/upload-artifact@v2
         with:
-              name: webapp
-              path: app/webapp-main.zip
+          name: webapp
+          path: app/webapp-main.zip
 
       - name: check path
         run: |
-              pwd
-              ls /home/runner/work/webapp/webapp
+          pwd
+          ls /home/runner/work/webapp/webapp
 
       - name: Build AMI
         env:
-          AWS_REGION: us-east-1
+          AWS_REGION: ${{ env.AWS_REGION }} # us-east-1
           SSH_USERNAME: admin
-          SUBNET_ID: subnet-025f87a6da259c0bd
+          SUBNET_ID: ${{ env.DEFAULT_SUBNET }} # subnet-025f87a6da259c0bd
         run: |
           packer build ami.debian-packer-aws.pkr.hcl
 
@@ -65,8 +71,61 @@ jobs:
 
       - name: Share AMI with DEMO account
         env:
-          AWS_REGION: us-east-1
+          AWS_REGION: ${{ env.AWS_REGION }} # us-east-1
           DEMO_ACCOUNT_ID: ${{ secrets.DEMO_ACCOUNT_ID }}
         run: |
           ami_id=${{ env.AMI_ID }}
           aws ec2 modify-image-attribute --image-id $AMI_ID --launch-permission "{\"Add\":[{\"UserId\":\"$DEMO_ACCOUNT_ID\"}]}"
+
+      ##### Assignment 10 Changes Begin #####
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
+          aws-region: ${{ env.AWS_REGION }} # us-east-1
+
+      - name: Create Launch Configuration
+        run: |
+          aws autoscaling create-launch-configuration \
+            --launch-configuration-name ${{ env.LAUNCH_CONFIGURATION_NAME }} \
+            --image-id ${{ env.AMI_ID }} \
+            --key-name ${{ secrets.EC2_KEY_NAME }} \
+            --instance-type ${{ secrets.EC2_INSTANCE_TYPE }} \
+            --region ${{ env.AWS_REGION }}
+
+      # - name: Create Auto Scaling Group
+      #   run: |
+      #     aws autoscaling create-auto-scaling-group \
+      #       --auto-scaling-group-name ${{ env.ASG_NAME }} \
+      #       --launch-configuration-name ${{ env.LAUNCH_CONFIGURATION_NAME }} \
+      #       --min-size ${{ secrets.ASG_MIN_SIZE }} \
+      #       --max-size ${{ secrets.ASG_MAX_SIZE }} \
+      #       --desired-capacity ${{ secrets.ASG_DESIRED_CAPACITY }} \
+      #       --vpc-zone-identifier ${{ secrets.YOUR_SUBNET_IDS }} \
+      #       --region ${{ env.AWS_REGION }}
+
+      # - name: Update Auto Scaling Group
+      #   run: |
+      #     aws autoscaling update-auto-scaling-group \
+      #       --auto-scaling-group-name ${{ env.ASG_NAME }} \
+      #       --launch-configuration-name ${{ env.LAUNCH_CONFIGURATION_NAME }} \
+      #       --region ${{ env.AWS_REGION }}
+
+      # - name: Instance Refresh
+      #   id: instance-refresh
+      #   run: |
+      #     # Issue the instance refresh command
+      #     aws autoscaling start-instance-refresh \
+      #     --auto-scaling-group-name ${{ env.ASG_NAME }} \
+      #     --preferences "MinHealthyPercentage=100, InstanceWarmup=300" \
+      #     --region ${{ env.AWS_REGION }}
+
+      #     # Wait for instance refresh to complete
+      #     aws autoscaling wait instance-refresh-complete \
+      #     --auto-scaling-group-name ${{ env.ASG_NAME }} \
+      #     --region ${{ env.AWS_REGION }}
+
+      # - name: Check Instance Refresh Status
+      #   run: echo "Instance Refresh is complete."
+      #   if: steps.instance-refresh.outputs.refreshed == 'true'
