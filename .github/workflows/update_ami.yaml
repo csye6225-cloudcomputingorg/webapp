@@ -11,7 +11,7 @@ jobs:
 
     env:
       AWS_REGION: us-east-1
-      ASG_NAME: web-asg
+      ASG_NAME: asg
 
     steps:
       - name: Checkout code
