@@ -1,4 +1,4 @@
-gg# webapp
+# webapp
 
 ## Prerequisite for building and deploying your application locally
 	- Install python 3.8 or above
@@ -26,3 +26,5 @@ gg# webapp
 	- export FLASK_ENV=development
 	- flask run --host=127.0.0.1 --port=5000
 
+### Command for Certificate Import
+aws acm import-certificate --certificate fileb://./demo_adityasrprakash_me.crt --private-key fileb://./private.key --certificate-chain fileb://./demo_adityasrprakash_me.ca-bundle --profile demo
