@@ -242,7 +242,7 @@ def handle_assignment_submission(assignment_id):
     if (service.check_creds(auth)):
         #assignment_response = service.get_assignment_by_id(auth, assignment_id)
         
-        status, assignment_response = service.get_assignment_submission(auth, assignment_id)
+        status, assignment_response = service.get_assignment_submission(auth, assignment_id, request)
 
         if status == 200:
             data, status = service.submit_assignment(auth, assignment_response, request)
@@ -254,6 +254,10 @@ def handle_assignment_submission(assignment_id):
                 response = service.prepare_response(404)
                 response.status = '404 SUBMISSION DEADLINE PASSED'
                 logger.error("SUBMISSION DEADLINE PASSED")
+            elif (status == 'not_found'):
+                response = service.prepare_response(404)
+                response.status = '404 ASSIGNMENT NOT FOUND'
+                logger.error("ASSIGNMENT NOT FOUND")
             else:
                 response = service.prepare_response(400)
                 logger.error("BAD REQUESTS")

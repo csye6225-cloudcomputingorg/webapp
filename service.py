@@ -53,13 +53,12 @@ def check_authorization(request, logger_statement):
         else:
             return auth
     except ValueError:
+        logger.info(logger_statement)
+        logger.debug("Authorisation Header: " +
+                     request.headers.get('Authorization'))
         logger.error("Invalid Authorization header format")
         handle_metric_count("failed_400")
         return prepare_response(400)
-
-    logger.info(logger_statement)
-    logger.debug("Authorisation Header: " +
-                 request.headers.get('Authorization'))
 
 
 # fuction to prepare the response structure of the API
@@ -86,6 +85,16 @@ def check_creds(auth):
     if bcrypt.checkpw(auth.password.encode('utf-8'), encoded_password):
         return True
     else:
+        sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+        user_email = auth.username
+        release_tag = "N/A"
+        # repo_url = submission_url.split("/archive")[0]
+        repo_url = "N/A"
+        logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+        status = "unauthorised"
+
+        post_to_sns_topic(
+            sns_topic_arn, user_email, release_tag, repo_url, status)
         return False
 
 
@@ -207,26 +216,52 @@ def get_assignment_by_id(auth, assignment_id):
         return prepare_response(401)
 
 
-def get_assignment_submission(auth, assignment_id):
+def get_assignment_submission(auth, assignment_id, request):
     assignment_data = bootstrap.get_assignment_by_id_db(assignment_id)
+    request_data = request.get_json()
+    submission_url = request_data['submission_url']
 
     if (assignment_data):
         if (bootstrap.get_number_of_submissions(auth.username, assignment_data)):
             return 200, assignment_data
         else:
+            sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+            user_email = auth.username
+            release_tag = submission_url.rsplit(
+                '/', 1)[-1].split('.zip')[0]
+            # repo_url = submission_url.split("/archive")[0]
+            repo_url = submission_url
+            logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+            status = "attempts_exceeded"
+
+            post_to_sns_topic(
+                sns_topic_arn, user_email, release_tag, repo_url, status)
             logger.error(
                 "Number of Attempts Exceeded. No further submissions are allowed.")
             return 429, "attempts_exceeded"
     else:
+        sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+        user_email = auth.username
+        release_tag = submission_url.rsplit(
+            '/', 1)[-1].split('.zip')[0]
+        # repo_url = submission_url.split("/archive")[0]
+        repo_url = submission_url
+        logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+        status = "not_found"
+
+        post_to_sns_topic(
+            sns_topic_arn, user_email, release_tag, repo_url, status)
         return 404, "assignment_not_found"
 
 
 def submit_assignment(auth, response, request):
     request_data = request.get_json()
 
-    pattern = re.compile(
-        r'^https://github\.com/[\w-]+/[\w-]+/archive/refs/tags/v\d+\.\d+\.\d+\.zip$')
+    # pattern = re.compile(
+    #     r'^https://github\.com/[\w-]+/[\w-]+/archive/refs/tags/v\d+\.\d+\.\d+\.zip$')
     
+    pattern = re.compile(r'\.zip$')
+
     print(response)
     print(request_data)
 
@@ -268,21 +303,66 @@ def submit_assignment(auth, response, request):
                     # repo_url = submission_url.split("/archive")[0]
                     repo_url = submission_url
                     logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+                    status = "success"
 
                     post_to_sns_topic(
-                        sns_topic_arn, user_email, release_tag, repo_url)
+                        sns_topic_arn, user_email, release_tag, repo_url, status)
 
                     return submission_data, 201
                 else:
-                    return "Database_Error", 503
+                    sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+                    user_email = auth.username
+                    release_tag = submission_url.rsplit(
+                        '/', 1)[-1].split('.zip')[0]
+                    # repo_url = submission_url.split("/archive")[0]
+                    repo_url = submission_url
+                    logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+                    status = "not_found"
+
+                    post_to_sns_topic(
+                        sns_topic_arn, user_email, release_tag, repo_url, status)
+                    return 404, "not_found"
             else:
+                sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+                user_email = auth.username
+                release_tag = submission_url.rsplit(
+                    '/', 1)[-1].split('.zip')[0]
+                # repo_url = submission_url.split("/archive")[0]
+                repo_url = submission_url
+                logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+                status = "deadline_passed"
+
+                post_to_sns_topic(
+                    sns_topic_arn, user_email, release_tag, repo_url, status)
                 logger.error(
                     "The submission deadline has passed. No further submissions are allowed.")
                 return 404, "deadlinePassed"
         else:
+            sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+            user_email = auth.username
+            release_tag = submission_url.rsplit(
+                '/', 1)[-1].split('.zip')[0]
+            # repo_url = submission_url.split("/archive")[0]
+            repo_url = submission_url
+            logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+            status = "invalid_url"
+
+            post_to_sns_topic(
+                sns_topic_arn, user_email, release_tag, repo_url, status)
             logger.error("Invalid Submission URL")
             return 400, "Invalid Submission URL"
     else:
+        sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
+        user_email = auth.username
+        release_tag = submission_url.rsplit(
+            '/', 1)[-1].split('.zip')[0]
+        # repo_url = submission_url.split("/archive")[0]
+        repo_url = submission_url
+        logger.debug(os.environ.get('SNS_TOPIC_ARN'))
+        status = "bad_request"
+
+        post_to_sns_topic(
+            sns_topic_arn, user_email, release_tag, repo_url, status)
         logger.error("Invalid Request")
         return 400, "Bad Request"
 
@@ -301,14 +381,16 @@ def prepare_assignments_response(status_code, assignment_list):
     return response
 
 
-def post_to_sns_topic(topic_arn, user_email, release_tag, repo_url):
+def post_to_sns_topic(topic_arn, user_email, release_tag, repo_url, status):
     # remove hardcoded value
-    sns = boto3.client('sns', region_name=environment_variables.get("AWS_REGION"))
+    sns = boto3.client(
+        'sns', region_name=environment_variables.get("AWS_REGION"))
 
     message = {
         'user_email': user_email,
         'release_tag': release_tag,
         'repo_url': repo_url,
+        'status' : status
     }
 
     response = sns.publish(
