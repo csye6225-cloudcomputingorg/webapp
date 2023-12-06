@@ -144,7 +144,7 @@ jobs:
             
             echo "Current status: $STATUS"
 
-            if [ "$STATUS" == "failed" ]; then
+            if [ "$STATUS" == "Failed" ]; then
               echo "Instance refresh failed"
               exit 1
             fi
