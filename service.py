@@ -354,10 +354,9 @@ def submit_assignment(auth, response, request):
     else:
         sns_topic_arn = environment_variables.get("SNS_TOPIC_ARN")
         user_email = auth.username
-        release_tag = submission_url.rsplit(
-            '/', 1)[-1].split('.zip')[0]
+        release_tag = 'N/A'
         # repo_url = submission_url.split("/archive")[0]
-        repo_url = submission_url
+        repo_url = 'N/A'
         logger.debug(os.environ.get('SNS_TOPIC_ARN'))
         status = "bad_request"
 
