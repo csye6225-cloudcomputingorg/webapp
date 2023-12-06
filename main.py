@@ -20,7 +20,7 @@ def redirect_api():
     else:
         if (service.check_creds(auth)):
             logger.info("Re-directing to Assignments page")
-            return redirect('/v2/assignments')
+            return redirect('/v3/assignments')
         else:
             logger.error("Unauthorised, check credentials")
             handle_metric_count("failed_401")
@@ -56,7 +56,7 @@ def handle_methods():
     return service.prepare_response(405)
 
 
-@app.route('/v2/assignments', methods=['PATCH'])
+@app.route('/v3/assignments', methods=['PATCH'])
 def handle_method():
     logger.error("Method Not Allowed")
     handle_metric_count("failed_405")
@@ -80,7 +80,7 @@ def showMessage(error=None):
 
 
 # handles assignment creation
-@app.route('/v2/assignments', methods=['POST'])
+@app.route('/v3/assignments', methods=['POST'])
 def handle_create_assignment():
 
     auth = service.check_authorization(
@@ -116,7 +116,7 @@ def handle_create_assignment():
 
 
 # handles assignment updates
-@app.route('/v2/assignments/<assignment_id>', methods=['PUT'])
+@app.route('/v3/assignments/<assignment_id>', methods=['PUT'])
 def handle_update_assignment(assignment_id):
 
     auth = service.check_authorization(
@@ -160,7 +160,7 @@ def handle_update_assignment(assignment_id):
 
 
 # handles delete assignments
-@app.route('/v2/assignments/<assignment_id>', methods=['DELETE'])
+@app.route('/v3/assignments/<assignment_id>', methods=['DELETE'])
 def handle_delete_assignment(assignment_id):
 
     auth = service.check_authorization(
@@ -193,7 +193,7 @@ def handle_delete_assignment(assignment_id):
 
 
 # handles get all assignments
-@app.route('/v2/assignments', methods=['GET'])
+@app.route('/v3/assignments', methods=['GET'])
 def handle_get_all_assignments():
 
     auth = service.check_authorization(
@@ -217,7 +217,7 @@ def handle_get_all_assignments():
             return service.prepare_response(401)
 
 
-@app.route('/v2/assignments/<assignment_id>', methods=['GET'])
+@app.route('/v3/assignments/<assignment_id>', methods=['GET'])
 def handle_get_by_id_assignment(assignment_id):
 
     auth = service.check_authorization(
@@ -233,7 +233,7 @@ def handle_get_by_id_assignment(assignment_id):
         return service.get_assignment_by_id(auth, assignment_id)
 
 
-@app.route('/v2/assignments/<assignment_id>/submission', methods=['POST'])
+@app.route('/v3/assignments/<assignment_id>/submission', methods=['POST'])
 def handle_assignment_submission(assignment_id):
 
     auth = service.check_authorization(
